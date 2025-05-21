@@ -8,10 +8,10 @@
     },
     {
       "name": "request-logger.logging_level",
-      "type": "java.lang.String",
-      "description": "The logging level for the aspect. Allowed values are: info, debug, warning, error, all.",
-      "defaultValue": "all",
-      "enum": ["info", "debug", "warning", "error", "all"]
+      "type": "com.example.loggingaspectstarter.config.LoggingLevel",
+      "description": "The logging level for the aspect. Allowed values are: INFO, DEBUG, WARNING, ERROR, ALL.",
+      "defaultValue": "ALL",
+      "enum": ["INFO", "DEBUG", "WARNING", "ERROR", "ALL"]
     }
   ]
 }

@@ -6,8 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class LoggingProperties {
 
     private boolean enabled = false;
-
-    private String loggingLevel = "all";
+    private LoggingLevel loggingLevel = LoggingLevel.ALL;
 
     public boolean isEnabled() {
         return enabled;
@@ -17,12 +16,11 @@ public class LoggingProperties {
         this.enabled = enabled;
     }
 
-    public String getLoggingLevel() {
+    public LoggingLevel getLoggingLevel() {
         return loggingLevel;
     }
 
-    public void setLoggingLevel(String loggingLevel) {
+    public void setLoggingLevel(LoggingLevel loggingLevel) {
         this.loggingLevel = loggingLevel;
     }
-
 }
