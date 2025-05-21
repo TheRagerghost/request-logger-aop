@@ -8,10 +8,9 @@
     },
     {
       "name": "request-logger.logging_level",
-      "type": "com.example.loggingaspectstarter.config.LoggingLevel",
+      "type": "com.avragerghost.request_logger_aop.config.LoggingLevel",
       "description": "The logging level for the aspect. Allowed values are: INFO, DEBUG, WARNING, ERROR, ALL.",
-      "defaultValue": "ALL",
-      "enum": ["INFO", "DEBUG", "WARNING", "ERROR", "ALL"]
+      "defaultValue": "ALL"
     }
   ]
 }

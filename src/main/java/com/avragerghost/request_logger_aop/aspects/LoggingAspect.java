@@ -8,8 +8,6 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -22,7 +20,6 @@ import jakarta.servlet.http.HttpServletRequest;
 @Aspect
 public class LoggingAspect {
 
-    private static final Logger logger = LoggerFactory.getLogger(LoggingAspect.class);
     private static final String ANSI_RED = "\u001B[31m";
     private static final String ANSI_GREEN = "\u001B[32m";
     private static final String ANSI_YELLOW = "\u001B[33m";
@@ -59,10 +56,9 @@ public class LoggingAspect {
         long startTime = System.currentTimeMillis();
         Object result = joinPoint.proceed();
         long endTime = System.currentTimeMillis();
-        logger.debug(
-                ANSI_DIM + "[DEBUG]" + ANSI_RESET + " Метод {} выполнен за "
-                        + ANSI_YELLOW + "{}ms" + ANSI_RESET,
-                joinPoint.getSignature().getName(), endTime - startTime);
+        System.out.println(
+                ANSI_DIM + "[DEBUG]" + ANSI_RESET + " Метод " + joinPoint.getSignature().getName() + " выполнен за "
+                        + ANSI_YELLOW + (endTime - startTime) + "ms" + ANSI_RESET);
         return result;
     }
 
@@ -73,8 +69,8 @@ public class LoggingAspect {
         }
         String methodName = joinPoint.getSignature().getName();
         Object[] args = joinPoint.getArgs();
-        logger.error(ANSI_RED + "[ERROR]" + ANSI_RESET + "\nОшибка в методе {} с аргументами: {}\nСообщение: {}",
-                methodName, args, e);
+        System.out.println(ANSI_RED + "[ERROR]" + ANSI_RESET + "\nОшибка в методе " + methodName + " с аргументами: "
+                + args + "\nСообщение: " + e);
     }
 
     @Before("loggableControllerMethods() || @annotation(com.avragerghost.request_logger_aop.aspects.annotations.LoggableRequest)")
@@ -89,7 +85,8 @@ public class LoggingAspect {
             String uri = request.getRequestURI();
             Object[] args = joinPoint.getArgs();
             String body = args.length > 0 ? args[0] != null ? args[0].toString() : "null" : "none";
-            logger.debug(ANSI_DIM + "[DEBUG]" + ANSI_RESET + " Запрос: {} {} с телом: {}", method, uri, body);
+            System.out.println(
+                    ANSI_DIM + "[DEBUG]" + ANSI_RESET + " Запрос: " + method + " " + uri + " с телом: " + body);
         }
     }
 
@@ -106,35 +103,36 @@ public class LoggingAspect {
             int statusCode = responseEntity.getStatusCode().value();
             Object body = responseEntity.getBody();
             String className = body != null ? body.getClass().getSimpleName() : "null";
-            String logMessage = body != null
+            String logMessageBody = body != null
                     ? ANSI_GREEN + "[" + className + "]" + ANSI_RESET + " -> " + body.toString()
                     : "null";
 
+            String logMessage = "Ответ на " + uri + ": HTTP " + statusCode + " " + logMessageBody;
+
             if (statusCode >= 200 && statusCode < 300) {
                 if (shouldLog(LoggingLevel.INFO)) {
-                    logger.info(ANSI_BLUE + "[ INFO]" + ANSI_RESET + " Ответ на {}: HTTP {} {}", uri, statusCode,
-                            logMessage);
+                    System.out.println(ANSI_BLUE + "[ INFO]" + ANSI_RESET + " " + logMessage);
                 }
             } else if (statusCode == 404) {
                 if (shouldLog(LoggingLevel.ERROR)) {
-                    logger.error(ANSI_RED + "[ERROR]" + ANSI_RESET + " Ответ на {}: HTTP {} {}", uri, statusCode,
-                            logMessage);
+                    System.out.println(ANSI_RED + "[ERROR]" + ANSI_RESET + " " + logMessage);
                 }
             } else {
                 if (shouldLog(LoggingLevel.WARNING)) {
-                    logger.warn(ANSI_YELLOW + "[ WARN]" + ANSI_RESET + " Ответ на {}: HTTP {} {}", uri, statusCode,
-                            logMessage);
+                    System.out.println(ANSI_YELLOW + "[ WARN]" + ANSI_RESET + " " + logMessage);
                 }
             }
         } else if (result == null) {
             if (shouldLog(LoggingLevel.WARNING)) {
-                logger.warn(ANSI_YELLOW + "[ WARN]" + ANSI_RESET + " Ответ на {}: null от метода {}", uri, methodName);
+                System.out.println(
+                        ANSI_YELLOW + "[ WARN]" + ANSI_RESET + " Ответ на " + uri + ": null от метода " + methodName);
             }
         } else {
             if (shouldLog(LoggingLevel.INFO)) {
                 String className = result.getClass().getSimpleName();
-                String logMessage = ANSI_BLUE + "[" + className + "]" + ANSI_RESET + " -> " + result.toString();
-                logger.info(ANSI_BLUE + "[ INFO]" + ANSI_RESET + " Ответ на {}: {}", uri, logMessage);
+                String logMessage = "Ответ на " + uri + ": " + ANSI_BLUE + "[" + className + "]" + ANSI_RESET + " -> "
+                        + result.toString();
+                System.out.println(ANSI_BLUE + "[ INFO]" + ANSI_RESET + " " + logMessage);
             }
         }
     }
