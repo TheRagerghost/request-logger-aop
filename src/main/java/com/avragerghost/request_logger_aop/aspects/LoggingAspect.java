@@ -14,6 +14,8 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.avragerghost.request_logger_aop.config.LoggingLevel;
 import com.avragerghost.request_logger_aop.config.LoggingProperties;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -27,9 +29,11 @@ public class LoggingAspect {
     private static final String ANSI_DIM = "\u001B[2m";
     private static final String ANSI_RESET = "\u001B[0m";
     private final LoggingProperties properties;
+    private final ObjectMapper objectMapper;
 
-    public LoggingAspect(LoggingProperties properties) {
+    public LoggingAspect(LoggingProperties properties, ObjectMapper objectMapper) {
         this.properties = properties;
+        this.objectMapper = objectMapper;
     }
 
     @Pointcut("within(@com.avragerghost.request_logger_aop.aspects.annotations.LoggableService *)")
@@ -57,7 +61,7 @@ public class LoggingAspect {
         Object result = joinPoint.proceed();
         long endTime = System.currentTimeMillis();
         System.out.println(
-                ANSI_DIM + "[DEBUG]" + ANSI_RESET + " Метод " + joinPoint.getSignature().getName() + " выполнен за "
+                ANSI_DIM + "[DEBUG]" + ANSI_RESET + " Method " + joinPoint.getSignature().getName() + " executed in "
                         + ANSI_YELLOW + (endTime - startTime) + "ms" + ANSI_RESET);
         return result;
     }
@@ -69,8 +73,8 @@ public class LoggingAspect {
         }
         String methodName = joinPoint.getSignature().getName();
         Object[] args = joinPoint.getArgs();
-        System.out.println(ANSI_RED + "[ERROR]" + ANSI_RESET + "\nОшибка в методе " + methodName + " с аргументами: "
-                + args + "\nСообщение: " + e);
+        System.out.println(ANSI_RED + "[ERROR]" + ANSI_RESET + "\nError in method " + methodName + " w/ args: "
+                + args + "\nMessage: " + e);
     }
 
     @Before("loggableControllerMethods() || @annotation(com.avragerghost.request_logger_aop.aspects.annotations.LoggableRequest)")
@@ -84,9 +88,16 @@ public class LoggingAspect {
             String method = request.getMethod();
             String uri = request.getRequestURI();
             Object[] args = joinPoint.getArgs();
-            String body = args.length > 0 ? args[0] != null ? args[0].toString() : "null" : "none";
+            String body;
+            try {
+                body = args.length > 0 && args[0] != null ? objectMapper.writeValueAsString(args[0]) : "none";
+            } catch (JsonProcessingException e) {
+                body = "error serializing request body";
+                System.out.println(
+                        ANSI_DIM + "[DEBUG]" + ANSI_RESET + "Failed to serialize request body: " + e.getMessage());
+            }
             System.out.println(
-                    ANSI_DIM + "[DEBUG]" + ANSI_RESET + " Запрос: " + method + " " + uri + " с телом: " + body);
+                    ANSI_DIM + "[DEBUG]" + ANSI_RESET + " Request: " + method + " " + uri + " w/ body: " + body);
         }
     }
 
@@ -103,11 +114,18 @@ public class LoggingAspect {
             int statusCode = responseEntity.getStatusCode().value();
             Object body = responseEntity.getBody();
             String className = body != null ? body.getClass().getSimpleName() : "null";
-            String logMessageBody = body != null
-                    ? ANSI_GREEN + "[" + className + "]" + ANSI_RESET + " -> " + body.toString()
-                    : "null";
+            String logMessageBody;
 
-            String logMessage = "Ответ на " + uri + ": HTTP " + statusCode + " " + logMessageBody;
+            try {
+                logMessageBody = body != null
+                        ? ANSI_BLUE + "[" + className + "]" + ANSI_RESET + " -> "
+                                + objectMapper.writeValueAsString(body)
+                        : "null";
+            } catch (JsonProcessingException e) {
+                logMessageBody = "error serializing response body";
+            }
+
+            String logMessage = "Response at " + uri + ": HTTP " + statusCode + " " + logMessageBody;
 
             if (statusCode >= 200 && statusCode < 300) {
                 if (shouldLog(LoggingLevel.INFO)) {
@@ -125,12 +143,14 @@ public class LoggingAspect {
         } else if (result == null) {
             if (shouldLog(LoggingLevel.WARNING)) {
                 System.out.println(
-                        ANSI_YELLOW + "[ WARN]" + ANSI_RESET + " Ответ на " + uri + ": null от метода " + methodName);
+                        ANSI_YELLOW + "[ WARN]" + ANSI_RESET + " Response at " + uri + ": null in method "
+                                + methodName);
             }
         } else {
             if (shouldLog(LoggingLevel.INFO)) {
                 String className = result.getClass().getSimpleName();
-                String logMessage = "Ответ на " + uri + ": " + ANSI_BLUE + "[" + className + "]" + ANSI_RESET + " -> "
+                String logMessage = "Response at " + uri + ": " + ANSI_BLUE + "[" + className + "]" + ANSI_RESET
+                        + " -> "
                         + result.toString();
                 System.out.println(ANSI_BLUE + "[ INFO]" + ANSI_RESET + " " + logMessage);
             }

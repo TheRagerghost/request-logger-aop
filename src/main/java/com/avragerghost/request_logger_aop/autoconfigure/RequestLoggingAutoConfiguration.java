@@ -13,8 +13,4 @@ import com.avragerghost.request_logger_aop.config.LoggingConfig;
 @ConditionalOnProperty(prefix = "request-logger", name = "enabled", havingValue = "true", matchIfMissing = false)
 @Import(LoggingConfig.class)
 public class RequestLoggingAutoConfiguration {
-
-    public RequestLoggingAutoConfiguration() {
-        System.out.println("\u001B[32mRequest Logger initialized\u001B[0m");
-    }
 }
