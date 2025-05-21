@@ -1,0 +1,17 @@
+{
+  "properties": [
+    {
+      "name": "request-logger.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable or disable logging for the aspect. If not set or false, the aspect is disabled.",
+      "defaultValue": false
+    },
+    {
+      "name": "request-logger.logging_level",
+      "type": "java.lang.String",
+      "description": "The logging level for the aspect. Allowed values are: info, debug, warning, error, all.",
+      "defaultValue": "all",
+      "enum": ["info", "debug", "warning", "error", "all"]
+    }
+  ]
+}
