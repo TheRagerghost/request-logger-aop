@@ -1,6 +1,6 @@
 # Инфо
 
-Аспекты логирования HTTP-запросов, перенесенные из ![предыдущего проекта.](https://github.com/TheRagerghost/tasks-crud-aop)
+Аспекты логирования HTTP-запросов, перенесенные из [предыдущего проекта.](https://github.com/TheRagerghost/tasks-crud-aop)
 
 # Задача
 
