@@ -22,6 +22,8 @@ import jakarta.servlet.http.HttpServletRequest;
 @Aspect
 public class LoggingAspect {
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
     private static final String ANSI_RED = "\u001B[31m";
     private static final String ANSI_GREEN = "\u001B[32m";
     private static final String ANSI_YELLOW = "\u001B[33m";
@@ -29,11 +31,9 @@ public class LoggingAspect {
     private static final String ANSI_DIM = "\u001B[2m";
     private static final String ANSI_RESET = "\u001B[0m";
     private final LoggingProperties properties;
-    private final ObjectMapper objectMapper;
 
-    public LoggingAspect(LoggingProperties properties, ObjectMapper objectMapper) {
+    public LoggingAspect(LoggingProperties properties) {
         this.properties = properties;
-        this.objectMapper = objectMapper;
     }
 
     @Pointcut("within(@com.avragerghost.request_logger_aop.aspects.annotations.LoggableService *)")
@@ -118,7 +118,7 @@ public class LoggingAspect {
 
             try {
                 logMessageBody = body != null
-                        ? ANSI_BLUE + "[" + className + "]" + ANSI_RESET + " -> "
+                        ? ANSI_GREEN + "[" + className + "]" + ANSI_RESET + " -> "
                                 + objectMapper.writeValueAsString(body)
                         : "null";
             } catch (JsonProcessingException e) {
@@ -149,7 +149,7 @@ public class LoggingAspect {
         } else {
             if (shouldLog(LoggingLevel.INFO)) {
                 String className = result.getClass().getSimpleName();
-                String logMessage = "Response at " + uri + ": " + ANSI_BLUE + "[" + className + "]" + ANSI_RESET
+                String logMessage = "Response at " + uri + ": " + ANSI_YELLOW + "[" + className + "]" + ANSI_RESET
                         + " -> "
                         + result.toString();
                 System.out.println(ANSI_BLUE + "[ INFO]" + ANSI_RESET + " " + logMessage);

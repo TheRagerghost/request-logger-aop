@@ -1,1 +1,1 @@
-com.avragerghost.request_logger_aop.autoconfigure.RequestLoggingAutoConfiguration
+com.avragerghost.request_logger_aop.config.LoggingConfig

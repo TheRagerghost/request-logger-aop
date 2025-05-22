@@ -6,7 +6,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
 import com.avragerghost.request_logger_aop.aspects.LoggingAspect;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Configuration
 @EnableConfigurationProperties(LoggingProperties.class)
@@ -20,13 +19,8 @@ public class LoggingConfig {
     }
 
     @Bean
-    public ObjectMapper objectMapper() {
-        return new ObjectMapper();
-    }
-
-    @Bean
     public LoggingAspect loggingAspect() {
-        return new LoggingAspect(properties, objectMapper());
+        return new LoggingAspect(properties);
     }
 
 }
